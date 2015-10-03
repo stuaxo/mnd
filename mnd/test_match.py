@@ -3,6 +3,7 @@ import unittest
 
 from mnd import arg_match
 
+# we will test arg matching against instances of this Msg type
 Msg = collections.namedtuple("Msg", "note type")
 
 class ArgMatchTest(unittest.TestCase):

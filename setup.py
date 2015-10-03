@@ -5,6 +5,8 @@ from shutil import rmtree
 from setuptools import setup, find_packages
 from setuptools import Command
 
+VERSION="0.1.0"
+
 here = normpath(abspath(dirname(__file__)))
 
 class CleanCommand(Command):
@@ -75,7 +77,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.1',
+    version=VERSION,
 
     description='Match python args and dispatch based on their contents.',
     long_description="Filter events by their content super easily",
