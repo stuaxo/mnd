@@ -9,6 +9,8 @@ Getting started
 
 Create a dispatcher
 ```python
+from mnd.dispatch import Dispatcher, handle
+
 >>> d = Dispatcher()
 ```
 
