@@ -1,11 +1,11 @@
 """
 >>> d = Dispatcher()
->>> @handler(d, blah=1)
->>> def blah(blah=None):
-...     print "got blah: ", blah
->>> d.dispatch(blah(blah=2))
->>> d.dispatch(blah(blah=1))
-got blah: 1
+>>> @handler(d, msg="hello")
+>>> def say(msg=None):
+...     print "got message: ", msg
+>>> d.dispatch(msg="gets filtered out..."))
+>>> d.dispatch(msg="hello"))
+got message: hello
 """
 
 from match import args_match
