@@ -5,7 +5,7 @@ from shutil import rmtree
 from setuptools import setup, find_packages
 from setuptools import Command
 
-VERSION="0.1.0"
+VERSION="0.1.1"
 
 here = normpath(abspath(dirname(__file__)))
 
@@ -80,7 +80,7 @@ setup(
     version=VERSION,
 
     description='Match python args and dispatch based on their contents.',
-    long_description="Filter events by their content super easily",
+    long_description=long_description,
 
     # The project's main homepage.
     url='https://github.com/stuaxo/mnd',
