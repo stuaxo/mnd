@@ -31,8 +31,42 @@ class CleanCommand(Command):
                 rmtree(path)
 
 
+long_description="""
+Match 'n Dispatch
+
+
+Match python args and dispatch based on their contents.
+
+
+Getting started
+
+Create a dispatcher
+
+
+from mnd.dispatch import Dispatcher, handle
+d = Dispatcher()
+
+
+Use the handy decorator
+>>> @handler(d, msg="hello")
+>>> def say(msg=None):
+...     print "got message: ", msg
+
+
+Try dispatching some events
+```python
+>>> d.dispatch(msg="gets filtered out..."))
+>>> d.dispatch(msg="hello"))
+got message: hello
+
+
+Install
+
+$ pip install mnd
+"""
+
 setup(
-    name='matchndispatch',
+    name='mnd',
 
     cmdclass={
         'clean': CleanCommand,
@@ -43,7 +77,7 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version='0.0.1',
 
-    description='dispatch to functions by value',
+    description='Match python args and dispatch based on their contents.',
     long_description="Filter events by their content super easily",
 
     # The project's main homepage.
@@ -78,6 +112,6 @@ setup(
     # What does your project relate to?
     keywords='match dispatch',
 
-    packages=find_packages(),
+    packages=["mnd"],
 
 )
