@@ -22,7 +22,8 @@ class Dispatcher(object):
     
     def add(self, handler, *accept_args, **accept_kwargs):
         """
-        Add a new handler 
+        Add a new handler that will be called when args match accept_args
+        or kwargs match accept_kwargs
         """
         
         # Dict is not hashable, so use hacky solution of converting to json :(
@@ -30,8 +31,15 @@ class Dispatcher(object):
         self.handlers[key] = (handler, accept_args, accept_kwargs)
     
     def dispatch(self, *args, **kwargs):
-        # Test against all valid arguments...
+        """
+        Call handlers that match args or kwargs
+        """
+        called_handlers = set()
         for handler, accept_args, accept_kwargs in self.handlers.values():
+            if handler in called_handlers:
+                continue
+            else:
+                called_handlers.add(handler)
             if args_match(accept_args, accept_kwargs, *args, **kwargs):
                 handler(*args, **kwargs)
 
@@ -41,6 +49,8 @@ def handle(dispatcher, *accept_args, **accept_kwargs):
     :dispatcher: dispatcher to recieve events from
     :accept_args:   args to match on
     :accept_kwargs: kwargs to match on
+
+    Decorator to attach functions to dispatcher
     """
     def wrap(f):
         dispatcher.add(f, *accept_args, **accept_kwargs)
