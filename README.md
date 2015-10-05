@@ -32,3 +32,11 @@ Install
 -------
 
 ```$ pip install mnd```
+
+
+Unit Test
+---------
+
+```$ python setup.py test```
+
+
