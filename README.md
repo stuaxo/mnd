@@ -14,7 +14,7 @@ from mnd.dispatch import Dispatcher, handle
 >>> d = Dispatcher()
 ```
 
-Use the handy decorator
+Add a handler with the handy decorator
 ```python
 >>> @handler(d, msg="hello")
 >>> def say(msg=None):
@@ -40,3 +40,8 @@ Unit Test
 ```$ python setup.py test```
 
 
+
+
+[![Build status][ci-image]][ci-url]
+[ci-image]: https://travis-ci.org/stuaxo/mnd.png?branch=master
+[ci-url]: https://travis-ci.org/stuaxo/mnd
