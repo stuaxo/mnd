@@ -1,4 +1,6 @@
 """
+Dispatcher
+
 >>> d = Dispatcher()
 >>> @handler(d, msg="hello")
 >>> def say(msg=None):
@@ -8,7 +10,7 @@
 got message: hello
 """
 
-from match import args_match
+from mnd.match import args_match
 import json
 
 class Dispatcher(object):    

@@ -36,7 +36,7 @@ def arg_match(m_arg, arg, default=True):
     if m_arg is None:
         return default
     if isinstance(m_arg, dict):
-        for name, value in m_arg.iteritems():
+        for name, value in m_arg.items():
             subarg = getattr(arg, name, InvalidArg)
             if subarg is InvalidArg:
                 return subarg
