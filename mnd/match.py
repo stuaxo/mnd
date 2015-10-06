@@ -58,7 +58,7 @@ def args_match(m_args, m_kwargs, *args, **kwargs):
     :param arg: args to match
     :param arg: kwargs to match
     """
-    if len(m_args) > args:
+    if len(m_args) > len(args):
         return False
     for m_arg, arg in zip(m_args, args):
         if not arg_match(m_arg, arg):
