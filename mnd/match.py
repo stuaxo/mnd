@@ -1,10 +1,9 @@
+"""
+Argument matching.
+"""
+
 from collections import namedtuple
-import mido
 
-
-"""
-Purely doing argument matching.
-"""
 
 class InvalidArg:
     pass
