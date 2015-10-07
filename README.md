@@ -23,8 +23,8 @@ Add a handler with the handy decorator
 
 Try dispatching some events
 ```python
->>> d.dispatch(msg="gets filtered out..."))
->>> d.dispatch(msg="hello"))
+>>> d.dispatch(msg="gets filtered out...")
+>>> d.dispatch(msg="hello")
 got message: hello
 ```
 

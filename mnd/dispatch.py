@@ -1,13 +1,5 @@
 """
 Dispatcher
-
->>> d = Dispatcher()
->>> @handler(d, msg="hello")
->>> def say(msg=None):
-...     print "got message: ", msg
->>> d.dispatch(msg="gets filtered out..."))
->>> d.dispatch(msg="hello"))
-got message: hello
 """
 
 from mnd.match import args_match
@@ -20,6 +12,17 @@ class Dispatcher(object):
     # TODO - make a version with more intelligent matching
     #        or args to handlers.
     def __init__(self):
+        """
+        Dispatch matching events
+
+        >>> d = Dispatcher()
+        >>> @handler(d, msg="hello")
+        >>> def say(msg=None):
+        ...     print "got message: ", msg
+        >>> d.dispatch(msg="gets filtered out...")
+        >>> d.dispatch(msg="hello")
+        got message: hello
+        """
         self.handlers = {}  # handler: rules
     
     def add(self, handler, *accept_args, **accept_kwargs):
