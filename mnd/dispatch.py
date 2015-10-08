@@ -4,8 +4,6 @@ Dispatcher
 
 from mnd.match import args_match
 
-import wrapt
-
 import pickle
 import logging
 
