@@ -1,18 +1,40 @@
 """
 Argument matching.
 """
-
+from operator import eq, contains
 from collections import namedtuple
 
 
 class InvalidArg:
-    pass
+    def __bool__(self):
+        return False
 
 
-def arg_match(m_arg, arg, default=True):
+def arg_comparitor(name):
+    """
+    :param arg name
+    :return: pair containing  name, comparitor
+
+    given an argument name, munge it and return a proper comparitor
+
+    >>> get_arg_cmp("a")
+    a, operator.eq
+
+    >>> get_arg_cmp("a__in")
+    a, operator.contains
+    """
+    if name.endswith("__in"):
+        return name[:-4], contains
+    else:
+        return name, eq
+
+    
+    
+def arg_match(m_arg, arg, comparitor=eq, default=True):
     """
     :param m_arg: value to match against or callable
     :param arg: arg to match
+    :param comparitor:  function that returns True if m_arg and arg match
     :param default: will be returned if m_arg is None
     
 
@@ -37,10 +59,11 @@ def arg_match(m_arg, arg, default=True):
         return default
     if isinstance(m_arg, dict):
         for name, value in m_arg.items():
+            name, _comparitor = arg_comparitor(name)
             subarg = getattr(arg, name, InvalidArg)
             if subarg is InvalidArg:
                 return subarg
-            matched = arg_match(subarg, value, default)
+            matched = arg_match(subarg, value, _comparitor, default)
             if not matched:
                 return matched
         return True
@@ -48,7 +71,7 @@ def arg_match(m_arg, arg, default=True):
         if hasattr(m_arg, "__call__"):
             return m_arg(arg)
         else:
-            return m_arg == arg
+            return comparitor(arg, m_arg)
 
 
 def args_match(m_args, m_kwargs, *args, **kwargs):
@@ -61,13 +84,15 @@ def args_match(m_args, m_kwargs, *args, **kwargs):
     if len(m_args) > len(args):
         return False
     for m_arg, arg in zip(m_args, args):
-        if not arg_match(m_arg, arg):
+        matches = arg_match(m_arg, arg, eq)
+        if not matches:
             return False  # bail out
 
     if m_kwargs:
         for name, m_arg in m_kwargs.items():
+            name, comparitor = arg_comparitor(name)
             arg = kwargs.get(name)
-            if not arg_match(m_arg, arg):
+            if not arg_match(m_arg, arg, comparitor):
                 return False  # bail out
     return True
 
