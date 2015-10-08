@@ -1,7 +1,7 @@
 """
 Argument matching.
 """
-from operator import eq, contains
+from operator import contains, eq, ge, gt, le, lt, ne
 from collections import namedtuple
 
 
@@ -25,6 +25,18 @@ def arg_comparitor(name):
     """
     if name.endswith("__in"):
         return name[:-4], contains
+    elif name.endswith("__ge"):
+        return name[:-4], ge
+    elif name.endswith("__gt"):
+        return name[:-4], gt
+    elif name.endswith("__le"):
+        return name[:-4], le
+    elif name.endswith("__lt"):
+        return name[:-4], lt
+    if name.endswith("__eq"):
+        return name[:-4], eq
+    if name.endswith("__ne"):
+        return name[:-4], ne
     else:
         return name, eq
 
