@@ -64,8 +64,8 @@ def arg_match(m_arg, arg, comparitor=eq, default=True):
             if subarg is InvalidArg:
                 return subarg
             matched = arg_match(subarg, value, _comparitor, default)
-            if not matched:
-                return matched
+            if not matched or matched is InvalidArg:
+                return False
         return True
     else:
         if hasattr(m_arg, "__call__"):
@@ -85,7 +85,7 @@ def args_match(m_args, m_kwargs, *args, **kwargs):
         return False
     for m_arg, arg in zip(m_args, args):
         matches = arg_match(m_arg, arg, eq)
-        if not matches:
+        if not matches or matches is InvalidArg:
             return False  # bail out
 
     if m_kwargs:
