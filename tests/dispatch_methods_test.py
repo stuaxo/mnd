@@ -26,8 +26,6 @@ class DispatchMethodsTest(unittest.TestCase):
     
     def test_handled(self):
         global d
-        print "test.."
-        print d.handlers
         mh = MsgHandler()
         d.dispatch()
         self.assertTrue(mh.was_called)
