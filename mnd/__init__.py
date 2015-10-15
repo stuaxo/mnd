@@ -1,1 +1,1 @@
-__all__=["match", "dispatch"]
+__all__=["match", "dispatch", "handler"]

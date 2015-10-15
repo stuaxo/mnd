@@ -3,6 +3,7 @@ Dispatcher
 """
 
 from mnd.match import args_match
+from mnd.handler import MNDFunction, handle
 
 import pickle
 import logging
@@ -33,6 +34,7 @@ class Dispatcher(object):
         self.handlers = {}  # handler: rules
     
     def add(self, handler, *accept_args, **accept_kwargs):
+        # TODO - this should just be 'handle'
         """
         Add a new handler that will be called when args match accept_args
         or kwargs match accept_kwargs
@@ -41,6 +43,26 @@ class Dispatcher(object):
         # Dict is not hashable, so use hacky solution of converting to json :(
         key = pickle.dumps(dict(args=accept_args, kwargs=accept_kwargs))
         self.handlers[key] = (handler, accept_args, accept_kwargs)
+        handler.__mnd__.dispatchers.append(self)
+
+    def replace_callback(self, old_cb, new_cb):
+        """
+        Replace one callback with another, maintaining
+        the same rules.
+        
+        The only time this is useful is if a callbacks
+        signature changes.
+        
+        The only usecase I can imagine for this is when
+        callback functions have been added to classes
+        and become methods.
+        
+        :param old_cb: callback to replace
+        :param new_cb: callback to replace
+        """
+        for k, (cb, accept_args, accept_kwargs) in self.handlers.items():
+            if cb == old_cb:
+                self.handlers[k] = (new_cb, accept_args, accept_kwargs)
     
     def dispatch(self, *args, **kwargs):
         """
@@ -79,16 +101,3 @@ class LoggingDispatcher(Dispatcher):
                 self.logger.info("  %s no matching handlers were found.", self.name)
         except Exception as e:
             self.logger.info(e)
-
-def handle(dispatcher, *accept_args, **accept_kwargs):
-    """
-    :param dispatcher: dispatcher to recieve events from
-    :param accept_args:   args to match on
-    :param accept_kwargs: kwargs to match on
-    Decorator to attach functions to dispatcher
-    """
-    def wrap(f):
-        dispatcher.add(f, *accept_args, **accept_kwargs)
-        return f
-    return wrap
-
