@@ -10,7 +10,7 @@ python:
   - "nightly" # currently points to 3.6-dev
 
 # command to install dependencies (we have none right now)
-install: "pip install six"
+#install: "pip install six"
 
 # command to run tests
-script: nosetests
+script: pip install six && nosetests
