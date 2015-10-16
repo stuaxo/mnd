@@ -2,7 +2,6 @@
 Argument matching.
 """
 from operator import contains, eq, ge, gt, le, lt, ne
-from collections import namedtuple
 
 
 class InvalidArg:
@@ -17,10 +16,10 @@ def arg_comparitor(name):
 
     given an argument name, munge it and return a proper comparitor
 
-    >>> get_arg_cmp("a")
+    >>> arg_comparitor("a")
     a, operator.eq
 
-    >>> get_arg_cmp("a__in")
+    >>> arg_comparitor("a__in")
     a, operator.contains
     """
     if name.endswith("__in"):
@@ -40,32 +39,29 @@ def arg_comparitor(name):
     else:
         return name, eq
 
-    
-    
+
 def arg_match(m_arg, arg, comparitor=eq, default=True):
     """
     :param m_arg: value to match against or callable
     :param arg: arg to match
     :param comparitor:  function that returns True if m_arg and arg match
     :param default: will be returned if m_arg is None
-    
 
     if m_arg is a callable it will be called with arg
-    
+
     >>> arg_match(1, 1)
     True
-    
+
     >>> arg_match(1, 2)
     True
-    
+
     You can match by sub args by passing in a dict
-    
+
     >>> from collections import namedtuple
     >>> Msg = namedtuple("msg", ["note", "type"])
     >>> m = Msg(note=1, type="note_on")
     >>> arg_match(dict(note=1), m)
     True
-    
     """
     if m_arg is None:
         return default
@@ -107,4 +103,3 @@ def args_match(m_args, m_kwargs, *args, **kwargs):
             if not arg_match(m_arg, arg, comparitor):
                 return False  # bail out
     return True
-

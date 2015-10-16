@@ -32,15 +32,15 @@ class MNDInfo(object):
     # base class
     def __init__(self, type):
         self.type = type
-        
+
     @property
     def is_class(self):
         return self.type == "class"
-    
+
     @property
     def is_function(self):
         return self.type == "function"
-    
+
 
 class MNDFunction(MNDInfo):
     """
@@ -60,13 +60,13 @@ class MNDFunction(MNDInfo):
         """
         Add dispatcher for argspec
         """
-        self.bound_to[argspec.key].append( (argspec, dispatcher) )
+        self.bound_to[argspec.key].append((argspec, dispatcher))
         dispatcher.add(self.f, argspec)
 
     @property
     def f(self):
         return self._wf()
-    
+
     def unbind(self):
         """
         Unbind from dispatchers and target function.
@@ -98,32 +98,35 @@ class MNDMethod(MNDInfo):
         """
         Add dispatcher for argspec
         """
-        self.bound_to[argspec.key].append( (argspec, dispatcher) )
+        self.bound_to[argspec.key].append((argspec, dispatcher))
         dispatcher.add(instance, argspec)
-        
+
 
 class MNDClass(MNDInfo):
     def __init__(self, bind_to):
         MNDInfo.__init__(self, "class")
         self.bind_to = bind_to
-            
+
 
 class Handler(type):
     """
     Metaclass enables instance methods to be used as handlers.
     """
     def __new__(meta, name, bases, dct):
-        # find all decorated functions and store them in an MNDClass under __mnd__
+        # store decorated functions in an MNDClass under __mnd__
         bind_to = {}   # { method_name: ((argspec, dispatcher)...)}
         for mname, member in dct.items():
             mnd = getattr(member, "__mnd__", None)
             if mnd is not None and mnd.is_function:
-                bind_to[mname] = mnd.unbind() # unbind function from dispatchers
+                bind_to[mname] = mnd.unbind()
 
         dct['__mnd__'] = MNDClass(bind_to)
-        
+
         # wrap __init__
-        wrapped_init = dct['__init__']
+        wrapped_init = dct.get('__init__')
+        if wrapped_init is None:
+            def wrapped_init(*args, **kwargs):
+                pass
 
         def __init__(self, *args, **kwargs):
             # bind any decorated methods and
@@ -135,12 +138,12 @@ class Handler(type):
                         mnd = MNDMethod(dispatcher, argspec)
                         m.__dict__['__mnd__'] = mnd
                     mnd.bind_to(m, argspec, dispatcher)
-                
+
             wrapped_init(self, *args, **kwargs)
-            
+
         dct['__init__'] = __init__
         return super(Handler, meta).__new__(meta, name, bases, dct)
-    
+
     def __init__(cls, name, bases, dct):
         super(Handler, cls).__init__(name, bases, dct)
 
@@ -160,4 +163,3 @@ def handle(dispatcher, *accept_args, **accept_kwargs):
         f.__mnd__ = mnd
         return f
     return wrap
-
