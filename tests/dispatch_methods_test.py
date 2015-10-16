@@ -13,8 +13,6 @@ d = Dispatcher()
 
 
 class MsgHandler(with_metaclass(Handler)):
-    __metaclass__ = Handler
-
     def __init__(self):
         self.was_called = False
 
