@@ -5,6 +5,7 @@ Dispatcher
 from mnd.match import args_match
 from mnd.handler import MNDFunction, handle
 
+import collections
 import pickle
 import logging
 
@@ -13,12 +14,14 @@ mnd_logger.setLevel(logging.DEBUG)
 ch=logging.StreamHandler()
 mnd_logger.addHandler(ch)
 
+
 class Dispatcher(object):    
     """
     Dispatches matching events.
     """
     # TODO - make a version with more intelligent matching
     #        or args to handlers.
+    # TODO - optimise data structures to speed this up
     def __init__(self):
         """
         Dispatch matching events
@@ -31,38 +34,20 @@ class Dispatcher(object):
         >>> d.dispatch(msg="hello")
         got message: hello
         """
-        self.handlers = {}  # handler: rules
+        self.handlers = collections.defaultdict(list)  # handler: rules
     
-    def add(self, handler, *accept_args, **accept_kwargs):
-        # TODO - this should just be 'handle'
-        """
-        Add a new handler that will be called when args match accept_args
-        or kwargs match accept_kwargs
-        """
-        
-        # Dict is not hashable, so use hacky solution of converting to json :(
-        key = pickle.dumps(dict(args=accept_args, kwargs=accept_kwargs))
-        self.handlers[key] = (handler, accept_args, accept_kwargs)
-        handler.__mnd__.dispatchers.append(self)
+    def add(self, handler, argspec):
+        self.handlers[argspec.key].append((handler, argspec))
 
-    def replace_callback(self, old_cb, new_cb):
+    def unbind(self, handler, argspec):
         """
-        Replace one callback with another, maintaining
-        the same rules.
-        
-        The only time this is useful is if a callbacks
-        signature changes.
-        
-        The only usecase I can imagine for this is when
-        callback functions have been added to classes
-        and become methods.
-        
-        :param old_cb: callback to replace
-        :param new_cb: callback to replace
+        handler will no longer be called if args match argspec
+
+        :param argspec: instance of ArgSpec - args to be matched
         """
-        for k, (cb, accept_args, accept_kwargs) in self.handlers.items():
-            if cb == old_cb:
-                self.handlers[k] = (new_cb, accept_args, accept_kwargs)
+        self.handlers[argspec.key].remove((handler, argspec))
+        if not len(self.handlers[argspec.key]):
+            del self.handlers[argspec.key]
     
     def dispatch(self, *args, **kwargs):
         """
@@ -71,33 +56,14 @@ class Dispatcher(object):
         :return: set of handlers called
         """
         called_handlers = set()
-        for handler, accept_args, accept_kwargs in self.handlers.values():
-            if handler in called_handlers:
-                continue
-            else:
-                if args_match(accept_args, accept_kwargs, *args, **kwargs):
-                    called_handlers.add(handler)
-                    handler(*args, **kwargs)
+        for handler_list in self.handlers.values():
+            for handler, argspec in handler_list:
+                accept_args, accept_kwargs = argspec.accepts
+                if handler in called_handlers:
+                    continue
+                else:
+                    if args_match(accept_args, accept_kwargs, *args, **kwargs):
+                        called_handlers.add(handler)
+                        handler(*args, **kwargs)
         
         return called_handlers
-
-class LoggingDispatcher(Dispatcher):
-    def __init__(self, name, logger=None):
-        global mnd_logger
-        Dispatcher.__init__(self)
-        self.name = name
-        if logger is None:
-            self.logger = mnd_logger
-        else:
-            self.logger = logger
-    
-    def dispatch(self, *args, **kwargs):
-        self.logger.info("%s dispatch %r %r", self.name, args, kwargs)
-        try:
-            called_handlers = super(LoggingDispatcher, self).dispatch(*args, **kwargs)
-            for handler in called_handlers or []:
-                self.logger.info("  %s called: %s %s", self.name, handler.__name__, handler)
-            if not called_handlers:
-                self.logger.info("  %s no matching handlers were found.", self.name)
-        except Exception as e:
-            self.logger.info(e)
