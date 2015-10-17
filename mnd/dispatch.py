@@ -59,7 +59,7 @@ class Dispatcher(object):
         for handler_list in self.handlers.values():
             for handler, argspec in handler_list:
                 accept_args, accept_kwargs = argspec.accepts
-                if handler in called_handlers:
+                if handler in called_handlers and False:
                     continue
                 else:
                     if args_match(accept_args, accept_kwargs, *args, **kwargs):

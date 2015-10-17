@@ -23,6 +23,9 @@ class ArgSpec(object):
         self.accept_args = accept_args
         self.accept_kwargs = accept_kwargs
 
+    def __repr__(self):
+        return "ArgSpec([A(%s), KW(%s)])" % (self.accept_args, self.accept_kwargs)
+
     @property
     def accepts(self):
         return self.accept_args, self.accept_kwargs
@@ -52,7 +55,7 @@ class MNDFunction(MNDInfo):
         :param f: callback function to call
         """
         self._wf = weakref.ref(f)
-        self.bound_to = defaultdict(list)
+        self.bound_to = defaultdict(set)
         self.bind_to(argspec, dispatcher)
         MNDInfo.__init__(self, "function")
 
@@ -60,7 +63,7 @@ class MNDFunction(MNDInfo):
         """
         Add dispatcher for argspec
         """
-        self.bound_to[argspec.key].append((argspec, dispatcher))
+        self.bound_to[argspec.key].add((argspec, dispatcher))
         dispatcher.add(self.f, argspec)
 
     @property
@@ -71,13 +74,13 @@ class MNDFunction(MNDInfo):
         """
         Unbind from dispatchers and target function.
 
-        :return: list of tuples containing [argspec, dispatcher]
+        :return: set of tuples containing [argspec, dispatcher]
         """
-        args_dispatchers = []
+        args_dispatchers = set()
         f = self._wf()
         if f is not None:
             for ad_list in self.bound_to.values():
-                args_dispatchers.extend(ad_list)
+                args_dispatchers.update(ad_list)
                 for argspec, dispatcher in ad_list:
                     dispatcher.unbind(self.f, argspec)
             del f.__dict__['__mnd__']
@@ -91,15 +94,15 @@ class MNDMethod(MNDInfo):
         :param m: callback method to call
         :param dispatcher: initial dispatcher
         """
-        self.bound_to = defaultdict(list)
+        self.bound_to = defaultdict(set)
         MNDInfo.__init__(self, "method")
 
-    def bind_to(self, instance, argspec, dispatcher):
+    def bind_to(self, instancemethod, argspec, dispatcher):
         """
         Add dispatcher for argspec
         """
-        self.bound_to[argspec.key].append((argspec, dispatcher))
-        dispatcher.add(instance, argspec)
+        self.bound_to[argspec.key].add((argspec, dispatcher))
+        dispatcher.add(instancemethod, argspec)
 
 
 class MNDClass(MNDInfo):
@@ -108,37 +111,54 @@ class MNDClass(MNDInfo):
         self.bind_to = bind_to
 
 
+def bind_handler_methods(self, klassname):
+    for name, ad_list in self.__mnd__.bind_to.items():
+        m = getattr(self, name)
+        for argspec, dispatcher in ad_list:
+            mnd = m.__dict__.get('__mnd__')
+            if mnd is None:
+                mnd = MNDMethod(dispatcher, argspec)
+                m.__dict__['__mnd__'] = mnd
+                mnd.bind_to(m, argspec, dispatcher)
+
+
+def base_mnds(bases):
+    """
+    :param bases: sequence of base classes
+    :yield: mnd of any base classes
+    """
+    for base in bases:
+        mnd = getattr(base, "__mnd__", None)
+        if mnd is not None:
+            yield mnd
+
+
 class Handler(type):
     """
     Metaclass enables instance methods to be used as handlers.
     """
     def __new__(meta, name, bases, dct):
-        # store decorated functions in an MNDClass under __mnd__
-        bind_to = {}   # { method_name: ((argspec, dispatcher)...)}
+        bind_to = defaultdict(set)   # { method_name: ((argspec, dispatcher)...)}
+        for mnd in base_mnds(bases):
+            bind_to.update(mnd.bind_to)
+
         for mname, member in dct.items():
             mnd = getattr(member, "__mnd__", None)
             if mnd is not None and mnd.is_function:
-                bind_to[mname] = mnd.unbind()
+                args_dispatchers = mnd.unbind()  # set
+                bind_to[mname].update(args_dispatchers)  # ((argspec, dispatcher)...)
 
         dct['__mnd__'] = MNDClass(bind_to)
 
         # wrap __init__
         wrapped_init = dct.get('__init__')
         if wrapped_init is None:
-            def wrapped_init(*args, **kwargs):
-                pass
+            if bases:
+                def wrapped_init(self, *args, **kwargs):
+                    pass
 
         def __init__(self, *args, **kwargs):
-            # bind any decorated methods and
-            for name, ad_list in self.__mnd__.bind_to.items():
-                m = getattr(self, name)
-                for argspec, dispatcher in ad_list:
-                    mnd = m.__dict__.get('__mnd__')
-                    if mnd is None:
-                        mnd = MNDMethod(dispatcher, argspec)
-                        m.__dict__['__mnd__'] = mnd
-                    mnd.bind_to(m, argspec, dispatcher)
-
+            bind_handler_methods(self, name)
             wrapped_init(self, *args, **kwargs)
 
         dct['__init__'] = __init__
