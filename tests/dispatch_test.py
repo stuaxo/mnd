@@ -1,7 +1,8 @@
 import collections
 import unittest
 
-from mnd.dispatch import Dispatcher, handle
+from mnd.dispatch import Dispatcher
+from mnd.handler import handle
 
 # we will test arg matching against instances of this Msg type
 Msg = collections.namedtuple("Msg", "note type")
