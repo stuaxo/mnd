@@ -3,7 +3,7 @@ Dispatcher
 """
 
 from mnd.match import args_match
-from mnd.handler import MNDFunction, handle
+from mnd.handler import ArgSpec, MNDFunction, MNDMethod, handle as _handle
 
 import collections
 import pickle
@@ -33,9 +33,31 @@ class Dispatcher(object):
         >>> d.dispatch(msg="gets filtered out...")
         >>> d.dispatch(msg="hello")
         got message: hello
+
+        Alternate syntax
+        >>> d = Dispatcher()
+        >>> @d.handler(msg="hello")
+        >>> def say(msg=None):
+        ...     print "got message: ", msg
+        >>> d.dispatch(msg="gets filtered out...")
+        >>> d.dispatch(msg="hello")
+        got message: hello
+
         """
         self.handlers = collections.defaultdict(list)  # handler: rules
     
+    def handle(self, *accept_args, **accept_kwargs):
+        """
+        handle decorator for use directly from the dispatcher
+
+        >>> d = Dispatcher()
+        >>> @d.handle(a=1)
+        >>> def f(a=None):
+        ...     print("hello")
+        """
+        # call the normal decorator to add the __MND__ info
+        return _handle(self, *accept_args, **accept_kwargs)
+
     def add(self, handler, argspec):
         self.handlers[argspec.key].append((handler, argspec))
 
@@ -45,8 +67,7 @@ class Dispatcher(object):
 
         :param argspec: instance of ArgSpec - args to be matched
         """
-        self.handlers[argspec.key].remove((handler, argspec))
-        if not len(self.handlers[argspec.key]):
+        if len(self.handlers[argspec.key]):
             del self.handlers[argspec.key]
     
     def dispatch(self, *args, **kwargs):

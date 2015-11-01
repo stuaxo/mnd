@@ -64,7 +64,7 @@ class MNDFunction(MNDInfo):
         Add dispatcher for argspec
         """
         self.bound_to[argspec.key].add((argspec, dispatcher))
-        dispatcher.add(self.f, argspec)
+        ##dispatcher.add(self.f, argspec)
 
     @property
     def f(self):
@@ -153,9 +153,8 @@ class Handler(type):
         # wrap __init__
         wrapped_init = dct.get('__init__')
         if wrapped_init is None:
-            if bases:
-                def wrapped_init(self, *args, **kwargs):
-                    pass
+            def wrapped_init(self, *args, **kwargs):
+                pass
 
         def __init__(self, *args, **kwargs):
             bind_handler_methods(self, name)
@@ -181,5 +180,6 @@ def handle(dispatcher, *accept_args, **accept_kwargs):
         argspec = ArgSpec(None, *accept_args, **accept_kwargs)
         mnd = MNDFunction(f, dispatcher, argspec)
         f.__mnd__ = mnd
+        dispatcher.add(f, argspec)
         return f
     return wrap
