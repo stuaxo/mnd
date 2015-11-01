@@ -121,7 +121,7 @@ class MNDClass(MNDInfo):
         self.bind_to = bind_to
 
 
-def bind_handler_methods(self, klassname):
+def bind_handler_methods(self):
     for name, ad_list in self.__mnd__.bind_to.items():
         m = getattr(self, name)
         for argspec, dispatcher in ad_list:
@@ -167,7 +167,7 @@ class Handler(type):
                 pass
 
         def __init__(self, *args, **kwargs):
-            bind_handler_methods(self, name)
+            bind_handler_methods(self)
             wrapped_init(self, *args, **kwargs)
 
         dct['__init__'] = __init__
