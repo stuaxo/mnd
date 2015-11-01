@@ -40,7 +40,7 @@ def arg_comparitor(name):
         return name, eq
 
 
-def arg_match(m_arg, arg, comparitor=eq, default=True):
+def arg_match(m_arg, arg, comparitor=eq, default=False):
     """
     :param m_arg: value to match against or callable
     :param arg: arg to match
@@ -82,7 +82,7 @@ def arg_match(m_arg, arg, comparitor=eq, default=True):
             return comparitor(arg, m_arg)
 
 
-def args_match(m_args, m_kwargs, *args, **kwargs):
+def args_match(m_args, m_kwargs, default, *args, **kwargs):
     """
     :param m_args:   values to match args against
     :param m_kwargs: values to match kwargs against
@@ -100,6 +100,6 @@ def args_match(m_args, m_kwargs, *args, **kwargs):
         for name, m_arg in m_kwargs.items():
             name, comparitor = arg_comparitor(name)
             arg = kwargs.get(name)
-            if not arg_match(m_arg, arg, comparitor):
+            if not arg_match(m_arg, arg, comparitor, default):
                 return False  # bail out
     return True

@@ -22,9 +22,11 @@ class Dispatcher(object):
     # TODO - make a version with more intelligent matching
     #        or args to handlers.
     # TODO - optimise data structures to speed this up
-    def __init__(self):
+    def __init__(self, default=False):
         """
         Dispatch matching events
+
+        :param default: Default match arg
 
         >>> d = Dispatcher()
         >>> @handler(d, msg="hello")
@@ -44,6 +46,7 @@ class Dispatcher(object):
         got message: hello
 
         """
+        self.default = default
         self.handlers = collections.defaultdict(list)  # handler: rules
     
     def handle(self, *accept_args, **accept_kwargs):
@@ -83,7 +86,7 @@ class Dispatcher(object):
                 if handler in called_handlers and False:
                     continue
                 else:
-                    if args_match(accept_args, accept_kwargs, *args, **kwargs):
+                    if args_match(accept_args, accept_kwargs, self.default, *args, **kwargs):
                         called_handlers.add(handler)
                         handler(*args, **kwargs)
         
