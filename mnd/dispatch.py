@@ -61,7 +61,12 @@ class Dispatcher(object):
         # call the normal decorator to add the __MND__ info
         return _handle(self, *accept_args, **accept_kwargs)
 
-    def add(self, handler, argspec):
+    def bind(self, handler, argspec):
+        """
+        :param handler: a function with
+        :param argspec:
+        :return:
+        """
         self.handlers[argspec.key].append((handler, argspec))
 
     def unbind(self, handler, argspec):
@@ -70,7 +75,8 @@ class Dispatcher(object):
 
         :param argspec: instance of ArgSpec - args to be matched
         """
-        if len(self.handlers[argspec.key]):
+        self.handlers[argspec.key].remove((handler, argspec))
+        if not len(self.handlers[argspec.key]):
             del self.handlers[argspec.key]
     
     def dispatch(self, *args, **kwargs):

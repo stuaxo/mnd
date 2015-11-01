@@ -15,7 +15,17 @@ from collections import defaultdict
 
 
 class ArgSpec(object):
+    """
+    The arguments a function accepts.
+
+    Keeps a pickled copy of the arguments for hashing purposes.
+    """
     def __init__(self, key=None, *accept_args, **accept_kwargs):
+        """
+        :param key: optional - already pickled tuple (accept_args, accept_kwargs)
+        :param accept_args: positional args
+        :param accept_kwargs: keyword args
+        """
         if key is None:
             key = pickle.dumps(dict(args=accept_args, kwargs=accept_kwargs))
 
@@ -61,10 +71,10 @@ class MNDFunction(MNDInfo):
 
     def bind_to(self, argspec, dispatcher):
         """
-        Add dispatcher for argspec
+        Add our function to dispatcher
         """
         self.bound_to[argspec.key].add((argspec, dispatcher))
-        ##dispatcher.add(self.f, argspec)
+        dispatcher.bind(self.f, argspec)
 
     @property
     def f(self):
@@ -102,7 +112,7 @@ class MNDMethod(MNDInfo):
         Add dispatcher for argspec
         """
         self.bound_to[argspec.key].add((argspec, dispatcher))
-        dispatcher.add(instancemethod, argspec)
+        dispatcher.bind(instancemethod, argspec)
 
 
 class MNDClass(MNDInfo):
@@ -167,19 +177,34 @@ class Handler(type):
         super(Handler, cls).__init__(name, bases, dct)
 
 
+def bind_function(f, dispatcher, *accept_args, **accept_kwargs):
+    """
+    Bind a function to a dispatcher.
+
+    Takes accept_args, and accept_kwargs and creates and ArgSpec instance,
+    adding that to the MNDFunction which annotates the function
+
+
+    :param f:  function to wrap
+    :param accept_args:
+    :param accept_kwargs:
+    :return:
+    """
+    argspec = ArgSpec(None, *accept_args, **accept_kwargs)
+    mnd = MNDFunction(f, dispatcher, argspec)
+    f.__mnd__ = mnd
+    return f
+
 def handle(dispatcher, *accept_args, **accept_kwargs):
     """
     :param dispatcher: dispatcher to recieve events from
     :param accept_args:   args to match on
     :param accept_kwargs: kwargs to match on
 
-    Creates an MNDFunction instance which adds contains the
+    Creates an MNDFunction instance which containing the
     argspec and adds the function to the dispatcher.
     """
-    def wrap(f):
-        argspec = ArgSpec(None, *accept_args, **accept_kwargs)
-        mnd = MNDFunction(f, dispatcher, argspec)
-        f.__mnd__ = mnd
-        dispatcher.add(f, argspec)
+    def bind_function_later(f):
+        bind_function(f, dispatcher, *accept_args, **accept_kwargs)
         return f
-    return wrap
+    return bind_function_later
