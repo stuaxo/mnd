@@ -99,12 +99,13 @@ class MNDFunction(MNDInfo):
 
 
 class MNDMethod(MNDInfo):
-    def __init__(self, dispatcher, argspec):
+    def __init__(self, m, dispatcher, argspec):
         """
         :param m: callback method to call
         :param dispatcher: initial dispatcher
         """
         self.bound_to = defaultdict(set)
+        self.bind_to(m, argspec, dispatcher)
         MNDInfo.__init__(self, "method")
 
     def bind_to(self, instancemethod, argspec, dispatcher):
@@ -127,9 +128,8 @@ def bind_handler_methods(self):
         for argspec, dispatcher in ad_list:
             mnd = m.__dict__.get('__mnd__')
             if mnd is None:
-                mnd = MNDMethod(dispatcher, argspec)
+                mnd = MNDMethod(m, dispatcher, argspec)
                 m.__dict__['__mnd__'] = mnd
-                mnd.bind_to(m, argspec, dispatcher)
 
 
 def base_mnds(bases):
@@ -194,6 +194,26 @@ def bind_function(f, dispatcher, *accept_args, **accept_kwargs):
     mnd = MNDFunction(f, dispatcher, argspec)
     f.__mnd__ = mnd
     return f
+
+
+def bind_instancemethod(m, dispatcher, *accept_args, **accept_kwargs):
+    """
+    Bind a function to a dispatcher.
+
+    Takes accept_args, and accept_kwargs and creates and ArgSpec instance,
+    adding that to the MNDFunction which annotates the function
+
+
+    :param f:  function to wrap
+    :param accept_args:
+    :param accept_kwargs:
+    :return:
+    """
+    argspec = ArgSpec(None, *accept_args, **accept_kwargs)
+    mnd = MNDMethod(m, dispatcher, argspec)
+    m.__dict__['__mnd__'] = mnd
+    return m
+
 
 def handle(dispatcher, *accept_args, **accept_kwargs):
     """
