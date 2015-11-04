@@ -67,11 +67,11 @@ def arg_match(m_arg, arg, comparator=eq, default=False):
         return default
     if isinstance(m_arg, dict):
         for name, value in m_arg.items():
-            name, _comparitor = arg_comparitor(name)
+            name, _comparator = arg_comparitor(name)
             subarg = getattr(arg, name, InvalidArg)
             if subarg is InvalidArg:
                 return subarg
-            matched = arg_match(subarg, value, _comparitor, default)
+            matched = arg_match(subarg, value, _comparator, default)
             if not matched or matched is InvalidArg:
                 return False
         return True
