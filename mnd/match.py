@@ -40,11 +40,11 @@ def arg_comparitor(name):
         return name, eq
 
 
-def arg_match(m_arg, arg, comparitor=eq, default=False):
+def arg_match(m_arg, arg, comparator=eq, default=False):
     """
     :param m_arg: value to match against or callable
     :param arg: arg to match
-    :param comparitor:  function that returns True if m_arg and arg match
+    :param comparator:  function that returns True if m_arg and arg match
     :param default: will be returned if m_arg is None
 
     if m_arg is a callable it will be called with arg
@@ -79,7 +79,7 @@ def arg_match(m_arg, arg, comparitor=eq, default=False):
         if hasattr(m_arg, "__call__"):
             return m_arg(arg)
         else:
-            return comparitor(arg, m_arg)
+            return comparator(arg, m_arg)
 
 
 def args_match(m_args, m_kwargs, default, *args, **kwargs):
@@ -98,8 +98,8 @@ def args_match(m_args, m_kwargs, default, *args, **kwargs):
 
     if m_kwargs:
         for name, m_arg in m_kwargs.items():
-            name, comparitor = arg_comparitor(name)
+            name, comparator = arg_comparitor(name)
             arg = kwargs.get(name)
-            if not arg_match(m_arg, arg, comparitor, default):
+            if not arg_match(m_arg, arg, comparator, default):
                 return False  # bail out
     return True
