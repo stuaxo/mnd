@@ -39,7 +39,7 @@ Filter using 'in'
 -----------------
 
 ```python
->>> @handler(d, msg__in=["hello", "hi")
+>>> @handler(d, msg__in=["hello", "hi"])
 >>> def greeting(msg=None):
 ...     print "greetings"
 >>> d.dispatch(msg="hello")
