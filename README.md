@@ -62,7 +62,7 @@ worm1=Worm(4)
 worm2=Worm(100)
 >>> @handler(d, dict(segments__gt=50))
 >>> def long_worm(w):
-...     print "long worm with %s segment.s" % segments)
+...     print("long worm with %s segment.s" % segments)
 >>> d.dispatch(worm1)
 >>> d.dispatch(worm2)
 long worm with 100 segments.
