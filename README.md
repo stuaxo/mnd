@@ -35,8 +35,15 @@ got message: hello
 ```
 
 
-Filter using rules, 'in', 'gt' etc
-----------------------------------
+Match attributes using rules
+-----------------------------
+
+As well as equality attributes can be matched using rules including,
+the full list is ```in lt le eq ne ge gt```.
+
+These are inspired by the django filter options.
+
+Example using "in"
 
 ```python
 >>> @handler(d, msg__in=["hello", "hi"])
@@ -48,22 +55,23 @@ greetings
 greetings
 ```
 
-As well as __in, operations lt, le, eq, ne, ge, gt are supported
-
-The following example creates a callback for when "segments" > 50:
-
+Example using "gt" and "le"
 
 ```python
 from collections import namedtuple
 Worm=namedtuple("Worm", "segments")
 worm1=Worm(4)
-worm2=Worm(100)
+worm2=Worm(90)
+>>> @handler(d, dict(segments__le=50))
+>>> def ordinary_handler(w):
+...     print("ordinary worm with %s segment.s" % segments)
 >>> @handler(d, dict(segments__gt=50))
->>> def long_worm(w):
+>>> def long_handler(w):
 ...     print("long worm with %s segment.s" % segments)
 >>> d.dispatch(worm1)
+ordinary worm with 4 segments.
 >>> d.dispatch(worm2)
-long worm with 100 segments.
+long worm with 90 segments.
 ```
 
 
