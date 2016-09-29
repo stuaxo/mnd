@@ -35,8 +35,8 @@ got message: hello
 ```
 
 
-Filter using 'in'
------------------
+Filter using rules, 'in', 'gt' etc
+----------------------------------
 
 ```python
 >>> @handler(d, msg__in=["hello", "hi"])
@@ -50,9 +50,7 @@ greetings
 
 As well as __in, operations lt, le, eq, ne, ge, gt are supported
 
-
-Filter by attribute
--------------------
+The following example creates a callback for when "segments" > 50:
 
 
 ```python
