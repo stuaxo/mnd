@@ -82,9 +82,4 @@ Unit Test
 
 ```$ python setup.py test```
 
-
-
-
-[![Build status][ci-image]][ci-url]
-[ci-image]: https://travis-ci.org/stuaxo/mnd.png?branch=master
-[ci-url]: https://travis-ci.org/stuaxo/mnd
+[![Build Status](https://travis-ci.org/stuaxo/mnd.svg?branch=master)](https://travis-ci.org/stuaxo/mnd)
